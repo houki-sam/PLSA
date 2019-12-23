@@ -44,7 +44,6 @@ class PLSA(object):
         #E-STEPの値はself.tmpで表現する
         self.tmp = self.Pz[None,:] * tmp_multi
         self.tmp /= np.sum(self.tmp,axis=1)[:,None]
-        print(self.tmp.shape)
 
         #nan or infが出たら置換
         self.tmp[np.isnan(self.tmp)] = 1/self.Z
@@ -67,7 +66,7 @@ class PLSA(object):
     #=======学習フェーズ======================================
     def train(self, k=1000, t=1.0e-7):
         # 対数尤度が収束するまでEステップとMステップを繰り返す
-        prev_llh = np.inf #対数尤度の初期値
+        prev_llh = 1e30 #対数尤度の初期値
         # flagを作成
         flag = False
 
@@ -113,16 +112,22 @@ class PLSA(object):
         if not os.path.exists("result"):
             os.makedirs("result")
         #潜在クラス数ごとにファイルを作成
-        if not os.path.exists("result/"+str(self.Z)):
-            os.makedirs("result/"+str(self.Z))
+        result_path = os.path.join("result",str(self.Z))
+        if not os.path.exists(result_path):
+            os.makedirs(result_path)
         
         #潜在クラスの所属確率を記録
-        np.savetxt("result/"+str(self.Z)+"/Pz.csv",self.Pz,delimiter=",")
+        np.savetxt(os.path.join(result_path,"Pz.csv"),self.Pz,delimiter=",")
         
-        
-        for x in range(len(self.label)):
-            header=""
-            for name in self.label[x]:
-                header += str(name)+","
-            np.savetxt("result/"+str(self.Z)+"/multi_"+str(x)+".csv",self.P_multi_z[x].T\
-                ,delimiter=",", header=header[:-1],comments='')
+        #多項分布の確率を記録
+        multi_path = os.path.join(result_path,"MultinomialDistribution")
+        if not os.path.exists(multi_path):
+            os.makedirs(multi_path)
+        for x, y in enumerate(self.multi.columns):
+            header = ",".join([str(x) for x in self.label[x]])
+            np.savetxt(
+                os.path.join(multi_path,y+".csv"),
+                self.P_multi_z[x].T,
+                delimiter=",", 
+                header=header,
+                )
