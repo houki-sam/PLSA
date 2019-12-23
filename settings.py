@@ -6,4 +6,4 @@ dataset = "test.csv"
 dataset_header = 0
 
 #潜在クラス数を指定
-Z = 20
+Z = 10

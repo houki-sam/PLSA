@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from .one_hot import one_hot
+from .one_hot import product
 
 
 class PLSA(object):
@@ -36,11 +37,14 @@ class PLSA(object):
     #============E-STEP=========================
     def estep(self):
         #多項分布の行列計算
-        tmp_multi = np.prod([self.one_hot[x]@self.P_multi_z[x] for x in range(len(self.label))])
+        tt=[self.one_hot[x]@self.P_multi_z[x] for x in range(len(self.label))]
+        tmp_multi = product(tt)
+        
 
         #E-STEPの値はself.tmpで表現する
         self.tmp = self.Pz[None,:] * tmp_multi
         self.tmp /= np.sum(self.tmp,axis=1)[:,None]
+        print(self.tmp.shape)
 
         #nan or infが出たら置換
         self.tmp[np.isnan(self.tmp)] = 1/self.Z
@@ -89,7 +93,8 @@ class PLSA(object):
     #=======対数尤度===========================================
     def llh(self):
         #多項分布の計算
-        tmp_multi = np.prod([self.one_hot[x]@self.P_multi_z[x] for x in range(self.label)])
+        tmp_multi = [self.one_hot[x]@self.P_multi_z[x] for x in range(len(self.label))]
+        tmp_multi = product(tmp_multi)
 
         #対数尤度を作成
         log = np.log(np.sum(self.Pz[None,:] * tmp_multi, axis=1))

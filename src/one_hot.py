@@ -34,3 +34,10 @@ def create(series):
     #ラベルを作成
     label = [reverse_columns[x] for x in range(len(reverse_columns))]
     return one_hot, label
+
+def product(list_numpy):
+    shape = list_numpy[0].shape
+    ones = np.ones(shape)
+    for array in list_numpy:
+        ones *= array
+    return ones
